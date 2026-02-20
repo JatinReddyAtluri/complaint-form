@@ -1,41 +1,54 @@
 import React, { useState } from "react";
+import {
+  Box,
+  Button,
+  Container,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  Grid,
+  GridItem,
+  Heading,
+  Input,
+  Select,
+  Textarea,
+  VStack,
+  Text,
+  useToast,
+} from "@chakra-ui/react";
 
 export default function AddComplaint() {
+  const toast = useToast();
   
   const [formData, setFormData] = useState({
     patient_id: "",
     contact_number: "",
     priority: "",
     complaint_description: "",
-    complaint_datetime: ""
+    complaint_datetime: "",
   });
 
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    // The [e.target.name] matches the keys in formData
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Clear error for a field when user starts typing again
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: null });
+    }
   };
 
   const validate = () => {
     let newErrors = {};
-
-    if (!formData.patient_id.trim())
-      newErrors.patient_id = "Patient ID is required";
-
-    if (!formData.contact_number.trim())
+    if (!formData.patient_id.trim()) newErrors.patient_id = "Patient ID is required";
+    if (!formData.contact_number.trim()) {
       newErrors.contact_number = "Contact number is required";
-    else if (!/^[0-9]{10}$/.test(formData.contact_number))
+    } else if (!/^[0-9]{10}$/.test(formData.contact_number)) {
       newErrors.contact_number = "Enter valid 10-digit number";
-
-    if (!formData.priority)
-      newErrors.priority = "Priority is required";
-
-    if (!formData.complaint_description.trim())
-      newErrors.complaint_description = "Complaint description is required";
-
-    if (!formData.complaint_datetime)
-      newErrors.complaint_datetime = "Date & Time required";
+    }
+    if (!formData.priority) newErrors.priority = "Priority is required";
+    if (!formData.complaint_description.trim()) newErrors.complaint_description = "Description is required";
+    if (!formData.complaint_datetime) newErrors.complaint_datetime = "Date & Time required";
 
     return newErrors;
   };
@@ -47,139 +60,149 @@ export default function AddComplaint() {
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
-      console.log(formData);
+      console.log("Submitting to Backend:", formData);
+      
+      toast({
+        title: "Complaint Submitted.",
+        description: "We've logged the complaint for Patient " + formData.patient_id,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
 
       setFormData({
         patient_id: "",
         contact_number: "",
         priority: "",
         complaint_description: "",
-        complaint_datetime: ""
+        complaint_datetime: "",
       });
-
       setErrors({});
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-      <div className="bg-white shadow-xl rounded-2xl w-full max-w-5xl p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Add New Complaint</h1>
-          <p className="text-gray-500 mt-1">Enter complaint details to create a new record</p>
-        </div>
+    <Box minH="100vh" bg="gray.50" py={10} px={6} display="flex" alignItems="center">
+      <Container maxW="5xl" bg="white" p={8} borderRadius="2xl" boxShadow="xl">
+        <Box mb={8}>
+          <Heading size="lg" color="gray.800">Add New Complaint</Heading>
+          <Text color="gray.500" mt={1}>Enter complaint details to create a new record</Text>
+        </Box>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          
-          <div className="grid md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Complaint ID</label>
-              <input
-                type="text"
-                disabled
-                placeholder="Auto-generated "
-                className="w-full rounded-lg border bg-gray-100 px-4 py-2"
-              />
-            </div>
+        <form onSubmit={handleSubmit}>
+          <VStack spacing={6} align="stretch">
+            
+            {/* Top Row: IDs and Name */}
+            <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={6}>
+              <GridItem>
+                <FormControl isDisabled>
+                  <FormLabel fontSize="sm" fontWeight="medium">Complaint ID</FormLabel>
+                  <Input placeholder="Auto-generated" bg="gray.100" />
+                </FormControl>
+              </GridItem>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Patient ID *</label>
-              <input
-                type="text"
-                name="patient_id" 
-                value={formData.patient_id}
+              <GridItem>
+                <FormControl isRequired isInvalid={!!errors.patient_id}>
+                  <FormLabel fontSize="sm" fontWeight="medium">Patient ID</FormLabel>
+                  <Input
+                    name="patient_id"
+                    value={formData.patient_id}
+                    onChange={handleChange}
+                    placeholder="Enter Patient ID"
+                    focusBorderColor="blue.500"
+                  />
+                  <FormErrorMessage>{errors.patient_id}</FormErrorMessage>
+                </FormControl>
+              </GridItem>
+
+              <GridItem>
+                <FormControl isDisabled>
+                  <FormLabel fontSize="sm" fontWeight="medium">Patient Name</FormLabel>
+                  <Input placeholder="Auto-filled" bg="gray.100" />
+                </FormControl>
+              </GridItem>
+            </Grid>
+
+            {/* Second Row: Contact and Priority */}
+            <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
+              <GridItem>
+                <FormControl isRequired isInvalid={!!errors.contact_number}>
+                  <FormLabel fontSize="sm" fontWeight="medium">Contact Number</FormLabel>
+                  <Input
+                    type="tel"
+                    name="contact_number"
+                    value={formData.contact_number}
+                    onChange={handleChange}
+                    focusBorderColor="blue.500"
+                  />
+                  <FormErrorMessage>{errors.contact_number}</FormErrorMessage>
+                </FormControl>
+              </GridItem>
+
+              <GridItem>
+                <FormControl isRequired isInvalid={!!errors.priority}>
+                  <FormLabel fontSize="sm" fontWeight="medium">Priority</FormLabel>
+                  <Select
+                    name="priority"
+                    placeholder="Select priority"
+                    value={formData.priority}
+                    onChange={handleChange}
+                    focusBorderColor="blue.500"
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </Select>
+                  <FormErrorMessage>{errors.priority}</FormErrorMessage>
+                </FormControl>
+              </GridItem>
+            </Grid>
+
+            {/* Third Row: Description */}
+            <FormControl isRequired isInvalid={!!errors.complaint_description}>
+              <FormLabel fontSize="sm" fontWeight="medium">Complaint Description</FormLabel>
+              <Textarea
+                rows={4}
+                name="complaint_description"
+                value={formData.complaint_description}
                 onChange={handleChange}
-                className="w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                focusBorderColor="blue.500"
               />
-              {errors.patient_id && <p className="text-red-500 text-sm">{errors.patient_id}</p>}
-            </div>
+              <FormErrorMessage>{errors.complaint_description}</FormErrorMessage>
+            </FormControl>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Patient Name</label>
-              <input
-                type="text"
-                placeholder="Auto-filled"
-                disabled
-                className="w-full rounded-lg border bg-gray-100 px-4 py-2"
-              />
-            </div>
-          </div>
+            {/* Fourth Row: File and Date */}
+            <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
+              <GridItem>
+                <FormControl>
+                  <FormLabel fontSize="sm" fontWeight="medium">Attachment (Optional)</FormLabel>
+                  <Input type="file" p={1} bg="gray.50" />
+                </FormControl>
+              </GridItem>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number *</label>
-              <input
-                type="tel"
-                name="contact_number"
-                value={formData.contact_number}
-                onChange={handleChange}
-                className="w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-              {errors.contact_number && <p className="text-red-500 text-sm">{errors.contact_number}</p>}
-            </div>
+              <GridItem>
+                <FormControl isRequired isInvalid={!!errors.complaint_datetime}>
+                  <FormLabel fontSize="sm" fontWeight="medium">Date & Time</FormLabel>
+                  <Input
+                    type="datetime-local"
+                    name="complaint_datetime"
+                    value={formData.complaint_datetime}
+                    onChange={handleChange}
+                    focusBorderColor="blue.500"
+                  />
+                  <FormErrorMessage>{errors.complaint_datetime}</FormErrorMessage>
+                </FormControl>
+              </GridItem>
+            </Grid>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Priority *</label>
-              <select
-                name="priority"
-                value={formData.priority}
-                onChange={handleChange}
-                className="w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
-              >
-                <option value="">Select priority</option>
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-              </select>
-              {errors.priority && <p className="text-red-500 text-sm">{errors.priority}</p>}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Complaint Description *</label>
-            <textarea
-              rows="4"
-              name="complaint_description"
-              value={formData.complaint_description}
-              onChange={handleChange}
-              className="w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
-            ></textarea>
-            {errors.complaint_description && <p className="text-red-500 text-sm">{errors.complaint_description}</p>}
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Attachment (Optional)</label>
-              <input
-                type="file"
-                name="attachment_path"
-                className="w-full border rounded-lg px-4 py-2 bg-gray-50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Complaint Date & Time *</label>
-              <input
-                type="datetime-local"
-                name="complaint_datetime"
-                value={formData.complaint_datetime}
-                onChange={handleChange}
-                className="w-full rounded-lg border px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-              {errors.complaint_datetime && <p className="text-red-500 text-sm">{errors.complaint_datetime}</p>}
-            </div>
-          </div>
-
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-            >
-              Submit Complaint
-            </button>
-          </div>
+            <Box display="flex" justifyContent="flex-end" pt={4}>
+              <Button type="submit" colorScheme="blue" size="lg" px={10}>
+                Submit Complaint
+              </Button>
+            </Box>
+          </VStack>
         </form>
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 }

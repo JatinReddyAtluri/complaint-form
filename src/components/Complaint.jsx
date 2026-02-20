@@ -47,8 +47,7 @@ export default function AddComplaint() {
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
-      // This object can now be sent directly to your Node.js/Postgres backend!
-      console.log("Data ready for Database:", formData);
+      console.log(formData);
 
       setFormData({
         patient_id: "",
@@ -65,7 +64,6 @@ export default function AddComplaint() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
       <div className="bg-white shadow-xl rounded-2xl w-full max-w-5xl p-8">
-        
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Add New Complaint</h1>
           <p className="text-gray-500 mt-1">Enter complaint details to create a new record</p>
@@ -79,7 +77,7 @@ export default function AddComplaint() {
               <input
                 type="text"
                 disabled
-                placeholder="Auto-generated (DB Side)"
+                placeholder="Auto-generated "
                 className="w-full rounded-lg border bg-gray-100 px-4 py-2"
               />
             </div>
@@ -100,7 +98,7 @@ export default function AddComplaint() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Patient Name</label>
               <input
                 type="text"
-                placeholder="Auto-filled from DB"
+                placeholder="Auto-filled"
                 disabled
                 className="w-full rounded-lg border bg-gray-100 px-4 py-2"
               />
